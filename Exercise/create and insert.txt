@@ -1,0 +1,240 @@
+CREATE TABLE people
+(
+id INT NOT NULL AUTO_INCREMENT,
+UNIQUE (id),
+PRIMARY KEY(id),
+
+name VARCHAR(200) NOT NULL,
+
+picture LONGBLOB,
+
+height FLOAT(10,2),
+
+weight FLOAT(10,2),
+
+gender ENUM("m", "f") NOT NULL,
+
+birthdate DATE NOT NULL,
+
+biography VARCHAR(255) 
+);
+
+INSERT INTO people (name, picture, height, weight, gender, birthdate, biography)VALUES
+("Ivan", NULL, 2.34, 2.333, 'm', "1990-12-4", NULL),
+("Ivan", NULL, 2.34, 2.333, 'm', "1990-12-4", NULL),
+("Ivan", NULL, 2.34, 2.333, 'm', "1990-12-4", NULL),
+("Ivan", NULL, 2.34, 2.333, 'm', "1990-12-4", NULL),
+("Ivan", NULL, 2.34, 2.333, 'm', "1990-12-4", NULL)
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+CREATE TABLE users
+(
+id BIGINT NOT NULL AUTO_INCREMENT, 
+UNIQUE (id),
+PRIMARY KEY(id),
+
+username VARCHAR(30) NOT NULL,
+UNIQUE (username),
+
+`passward` VARCHAR(26) NOT NULL, 
+
+profile_picture MEDIUMBLOB,
+
+last_login_time DATETIME,
+
+is_deleted TINYINT(1) 
+);
+
+INSERT INTO users (username, `passward`, profile_picture, last_login_time, is_deleted) VALUES
+("Pesho", "hahaha", NULL, "1973-12-30 15:30:00", 0),
+("Ivan", "hahah", NULL, "1973-12-30 15:30:00", 0),
+("Blago", "haha", NULL, "1973-12-30 15:30:00", 0),
+("Gosho", "hah", NULL, "1973-12-30 15:30:00", 1),
+("Tzeno", "ha", NULL, "1973-12-30 15:30:00", 1)
+
+/////////////////////////////////////////////////////////////////////////////////////////
+CREATE DATABASE movies;
+
+CREATE TABLE movies.directors
+(
+id INT NOT NULL AUTO_INCREMENT,
+PRIMARY KEY(id),
+
+director_name VARCHAR(50) NOT NULL,
+
+notes VARCHAR(255)
+);
+
+CREATE TABLE movies.genres
+(
+id INT NOT NULL AUTO_INCREMENT,
+PRIMARY KEY(id),
+
+genre_name VARCHAR(50) NOT NULL,
+
+notes VARCHAR(255)
+);
+
+CREATE TABLE movies.categories
+(
+id INT NOT NULL AUTO_INCREMENT,
+PRIMARY KEY(id),
+
+category_name VARCHAR(50) NOT NULL,
+
+notes VARCHAR(255)
+);
+
+CREATE TABLE movies.movies
+(
+id INT NOT NULL AUTO_INCREMENT,
+PRIMARY KEY(id),
+
+title VARCHAR(255) NOT NULL,
+
+director_id INT NOT NULL, 
+CONSTRAINT FK_directors 
+FOREIGN KEY (director_id) 
+REFERENCES movies.directors (id),
+
+copyright_year YEAR NOT NULL,
+
+`length` TIME NOT NULL,
+
+genre_id INT NOT NULL,
+CONSTRAINT FK_genres 
+FOREIGN KEY (genre_id) 
+REFERENCES movies.genres (id),
+ 
+category_id INT NOT NULL,
+CONSTRAINT FK_categories 
+FOREIGN KEY (category_id) 
+REFERENCES movies.categories (id),
+ 
+rating ENUM("1 STAR", "2 STAR", "3 STAR"),
+ 
+notes VARCHAR(255)
+);
+
+INSERT INTO movies.directors (director_name, notes) VALUES
+("Ivan", NULL),
+("Ivan", NULL),
+("Ivan", NULL),
+("Ivan", NULL),
+("Ivan", NULL);
+
+INSERT INTO movies.genres (genre_name, notes) VALUES
+("Comedy", NULL),
+("Comedy", NULL),
+("Comedy", NULL),
+("Comedy", NULL),
+("Comedy", NULL);
+
+INSERT INTO movies.categories (category_name, notes) VALUES
+("Family", NULL),
+("Family", NULL),
+("Family", NULL),
+("Family", NULL),
+("Family", NULL);
+
+INSERT INTO movies.movies (title, director_id, copyright_year, `length`, genre_id, category_id, rating, notes) VALUES
+("Police academy 1", 1, "1990", "02:11:23", 1, 1, "3 STAR", NULL),
+("Police academy 2", 2, "1990", "02:11:23", 2, 2, "3 STAR", NULL),
+("Police academy 3", 3, "1990", "02:11:23", 3, 3, "3 STAR", NULL),
+("Police academy 4", 4, "1990", "02:11:23", 4, 4, "3 STAR", NULL),
+("Police academy 5", 5, "1990", "02:11:23", 5, 5, "3 STAR", NULL)
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE categories(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  category CHAR(1),
+  daily_rate DECIMAL(19,4),
+  weekly_rate DECIMAL(19,4),
+  monthly_rate DECIMAL(19,4),
+  weekend_rate DECIMAL(19,4)
+);
+
+CREATE TABLE cars(
+  id INT AUTO_INCREMENT PRIMARY KEY ,
+  plate_number VARCHAR(50),
+  make VARCHAR(50),
+  model VARCHAR(50),
+  car_year YEAR(4),
+  category_id INT NOT NULL,
+  doors INT,
+  picture BLOB,
+  `condition` VARCHAR(50),
+  available ENUM("YES", "NO")
+);
+
+CREATE TABLE employees(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  title VARCHAR(255),
+  notes VARCHAR(255)
+);
+
+CREATE TABLE customers(
+  id INT AUTO_INCREMENT PRIMARY KEY ,
+  driver_licence_number VARCHAR(50),
+  full_name VARCHAR(255),
+  address VARCHAR(255),
+  city VARCHAR(50),
+  zip_code VARCHAR(50),
+  notes VARCHAR(255)
+);
+
+CREATE TABLE rental_orders(
+  id INT AUTO_INCREMENT PRIMARY KEY ,
+  employee_id INT NOT NULL ,
+  customer_id INT NOT NULL ,
+  car_id INT NOT NULL ,
+  car_condition VARCHAR(255),
+  tank_level FLOAT,
+  kilometrage_start FLOAT,
+  kilometrage_end FLOAT,
+  total_kilometrage FLOAT,
+  start_date DATE,
+  end_date DATE,
+  total_days INT,
+  rate_applied DECIMAL(19,4),
+  tax_rate DECIMAL(19,4),
+  order_status VARCHAR(50),
+  notes VARCHAR(255)
+);
+
+INSERT INTO categories (category, daily_rate, weekly_rate, monthly_rate, weekend_rate) VALUES
+  (NULL, NULL, NULL, NULL, NULL ),
+  (NULL, NULL, NULL, NULL, NULL ),
+  (NULL, NULL, NULL, NULL, NULL );
+
+INSERT INTO cars (plate_number, make, model, car_year, category_id, doors, picture, `condition`, available) VALUES
+  (NULL , NULL , NULL , NULL , 1, NULL , NULL , NULL , NULL ),
+  (NULL , NULL , NULL , NULL , 2, NULL , NULL , NULL , NULL ),
+  (NULL , NULL , NULL , NULL , 3, NULL , NULL , NULL , NULL );
+
+INSERT INTO employees (first_name, last_name, title, notes) VALUES
+  (NULL, NULL, NULL, NULL),
+  (NULL, NULL, NULL, NULL),
+  (NULL, NULL, NULL, NULL);
+
+INSERT INTO customers (driver_licence_number, full_name, address, city, zip_code, notes) VALUES
+  (NULL, NULL, NULL, NULL, NULL, NULL ),
+  (NULL, NULL, NULL, NULL, NULL, NULL ),
+  (NULL, NULL, NULL, NULL, NULL, NULL );
+
+INSERT INTO rental_orders
+(employee_id, customer_id, car_id, car_condition, tank_level,
+ kilometrage_start, kilometrage_end, total_kilometrage, start_date,
+ end_date, total_days, rate_applied, tax_rate, order_status, notes)
+    VALUES
+      (1, 1, 1, NULL , NULL , NULL , NULL , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+      (2, 2, 2, NULL , NULL , NULL , NULL , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+      (3, 3, 3, NULL , NULL , NULL , NULL , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+

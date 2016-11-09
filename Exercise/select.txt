@@ -1,0 +1,175 @@
+SELECT * FROM towns ORDER BY (name);
+
+SELECT * FROM departments ORDER BY (name);
+
+SELECT * FROM employees ORDER BY (salary) DESC
+
+/////////////////////////////////////////////////////
+SELECT name FROM towns ORDER BY (name);
+
+SELECT name FROM departments ORDER BY (name);
+
+SELECT first_name, last_name, job_title, salary FROM employees ORDER BY (salary) DESC
+
+////////////////////////////////////////////////////////////////////////////////////
+UPDATE employees SET salary = salary + (salary / 10);
+SELECT salary FROM employees
+
+////////////////////////////////////////////////////////////////////////////////////////
+SELECT concat(first_name, '.', last_name, "@softuni.bg")  FROM employees
+
+////////////////////////////////////////////////////////////////////////////////////////
+SELECT DISTINCT salary FROM employees
+
+/////////////////////////////////////////////////////////////////////
+SELECT * FROM employees
+WHERE job_title = "Sales Representative"
+
+//////////////////////////////////////////////////////////////////////
+SELECT first_name, last_name, job_title FROM employees
+WHERE salary BETWEEN 20000 AND 30000
+
+///////////////////////////////////////////////////////////////////
+SELECT concat(first_name, " ", middle_name, " ", last_name) AS "full_name" FROM employees
+WHERE 
+salary = 25000 OR 
+salary = 14000 OR 
+salary = 12500 OR 
+salary = 23600
+
+
+/////////////////////////////////////////////////////////////////////////////
+SELECT first_name, last_name FROM employees
+WHERE manager_id IS NULL
+
+////////////////////////////////////////////////////////////////////////////
+SELECT first_name, last_name, salary  FROM employees 
+WHERE salary > 50000
+ORDER BY salary DESC
+
+//////////////////////////////////////////////////////////////////////////////
+SELECT first_name, last_name FROM employees 
+ORDER BY salary DESC
+LIMIT 5
+
+////////////////////////////////////////////////////////////////////////////////
+SELECT first_name, last_name FROM employees 
+WHERE department_id != 4
+
+///////////////////////////////////////////////////////////////////////////////
+SELECT * FROM employees AS e
+ORDER BY 
+e.salary DESC,
+e.first_name ASC,
+e.last_name DESC,
+e.middle_name ASC
+
+////////////////////////////////////////////////////////////////////////////////
+CREATE VIEW v_employees_salaries AS
+SELECT first_name, last_name, salary FROM employees;
+
+SELECT * FROM v_employees_salaries
+
+///////////////////////////////////////////////////////////////////////////////
+CREATE VIEW v_employees_job_titles AS
+SELECT 	
+	 CASE 
+         WHEN middle_name IS NULL THEN concat(first_name, " ", "", " ", last_name) 
+         ELSE concat(first_name, " ", middle_name, " ", last_name) 
+     END 	
+	AS "full_name", job_title FROM employees;
+
+SELECT * FROM v_employees_job_titles
+
+///////////////////////////////////////////////////////////////////////////////////
+SELECT DISTINCT job_title FROM employees 
+
+/////////////////////////////////////////////////////////////////////////////////////
+SELECT * FROM projects AS p
+ORDER BY
+p.start_date,
+p.name
+LIMIT 10
+
+//////////////////////////////////////////////////////////////////////////////////////////
+SELECT first_name, last_name, hire_date FROM employees AS e
+ORDER BY e.hire_date DESC
+LIMIT 7
+
+////////////////////////////////////////////////////////////////////////////////////////
+UPDATE employees AS e, departments AS d
+	SET e.salary = e.salary + (e.salary * 0.12)
+WHERE e.department_id = d.department_id
+	AND d.name IN ("Engineering", "Tool Design", "Marketing", "Information Services");
+	
+SELECT salary FROM employees;
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+SELECT peak_name FROM peaks
+ORDER BY peak_name
+
+////////////////////////////////////////////////////////////////////////////
+SELECT country_name, population FROM countries AS c
+WHERE c.continent_code = "EU"
+ORDER BY 
+c.population DESC,
+c.country_name ASC
+LIMIT 30
+
+///////////////////////////////////////////////////////////////////////
+SELECT 
+c.country_name, 
+c.country_code, 
+		CASE 
+         WHEN c.currency_code = "EUR" THEN "Euro" 
+         ELSE "Not Euro" 
+     	END 	
+		AS "currency" 
+FROM countries AS c
+ORDER BY c.country_name ASC
+
+//////////////////////////////////////////////////////////////////////
+SELECT name FROM characters
+ORDER BY name ASC
+
+//////////////////////////////////////////////////////
+SELECT 
+	g.name AS game,
+	CASE		
+		WHEN HOUR(g.`start`) >= 0 AND HOUR(g.`start`) < 12 THEN "Morning"
+		WHEN HOUR(g.`start`) >= 12 AND HOUR(g.`start`) < 18 THEN "Afternoon"		
+		ELSE "Evening"
+	END AS part_of_the_day,		
+	CASE
+		WHEN g.duration <= 3 THEN "Extra Short"
+		WHEN g.duration BETWEEN 4 AND 6 THEN "Short"
+		WHEN g.duration > 6 THEN "Long"
+		ELSE "Extra Long"
+	END AS "duration"
+FROM games AS g
+ORDER BY
+	game ASC,
+	duration ASC,
+	part_of_the_day ASC
+	
+//////////////////////////////////////////////////////////////////
+CREATE TABLE orders(
+id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+product_name VARCHAR(50) NOT NULL,
+order_date DATE NOT NULL);
+
+INSERT INTO orders (product_name, order_date) VALUES
+("Butter", "2016-09-19 00:00:00"),
+("Milk", "2016-09-30 00:00:00"),
+("Cheese", "2016-09-04 00:00:00"),
+("Bread", "2015-12-20 00:00:00"),
+("Tomatoes", "2015-12-30 00:00:00");
+
+////////////////////////////////////////////////////////////////////////
+SELECT 
+o.product_name,
+o.order_date,
+DATE_ADD(o.order_date, INTERVAL 3 DAY) AS "pay_due",
+DATE_ADD(o.order_date, INTERVAL 1 MONTH) AS "deliver_due"
+FROM orders AS o
+

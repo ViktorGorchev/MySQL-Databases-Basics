@@ -1,0 +1,78 @@
+SELECT e.first_name, e.last_name FROM employees AS e
+WHERE e.first_name LIKE "SA%"
+
+//////////////////////////////////////////////////////
+SELECT e.first_name, e.last_name FROM employees AS e
+WHERE e.last_name LIKE "%ei%"
+
+////////////////////////////////////////////////////////
+SELECT e.first_name FROM employees AS e
+WHERE 
+	e.department_id IN(3, 10) 
+	AND 
+	YEAR(e.hire_date) BETWEEN 1995 AND 2005
+	
+///////////////////////////////////////////////////////////
+SELECT e.first_name, e.last_name FROM employees AS e
+WHERE e.job_title NOT LIKE "%engineer%"
+
+////////////////////////////////////////////////////
+SELECT t.name FROM towns AS t
+WHERE CHAR_LENGTH(t.name) IN(5, 6)
+ORDER BY t.name ASC
+
+///////////////////////////////////////////
+SELECT t.town_id, t.name FROM towns AS t
+WHERE t.name REGEXP "^[M|K|B|E]"
+ORDER BY t.name ASC
+
+//////////////////////////////////////////
+SELECT t.town_id, t.name FROM towns AS t
+WHERE t.name REGEXP "^[^R|^B|^|^D]"
+ORDER BY t.name ASC
+
+////////////////////////////////////////
+CREATE VIEW v_employees_hired_after_2000 AS
+SELECT e.first_name, e.last_name FROM employees AS e
+WHERE YEAR(e.hire_date) > 2000
+
+/////////////////////////////////////////////////////////
+SELECT e.first_name, e.last_name FROM employees AS e
+WHERE CHAR_LENGTH(e.last_name) = 5
+
+////////////////////////////////////////////////////////
+SELECT 
+p.peak_name, 
+r.river_name,
+LOWER(CONCAT(p.peak_name, RIGHT(r.river_name, CHAR_LENGTH(r.river_name) - 1))) AS "mix" 
+FROM peaks AS p, rivers AS r
+WHERE RIGHT(p.peak_name, 1) = LEFT(r.river_name, 1)
+ORDER BY mix
+
+////////////////////////////////////////////////////////
+SELECT
+	g.name, 
+	DATE_FORMAT(g.`start`, '%Y-%m-%d')	 
+FROM games AS g
+WHERE YEAR(g.`start`) IN (2011, 2012)
+ORDER BY
+	g.`start`,
+	g.name
+LIMIT 50
+
+////////////////////////////////////////////////////////
+SELECT 
+	u.user_name, 	
+	SUBSTRING(u.email FROM LOCATE("@", u.email) + 1) AS "email_provider"	 
+FROM users AS u
+ORDER BY
+	email_provider ASC,
+	u.user_name ASC
+	
+//////////////////////////////////////////////////////////
+SELECT u.user_name, u.ip_address FROM users AS u
+WHERE u.ip_address LIKE "___.1%.%.___"
+ORDER BY u.user_name ASC
+
+//////////////////////////////////////////////////////////
+

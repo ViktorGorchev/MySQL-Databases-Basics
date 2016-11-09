@@ -1,0 +1,359 @@
+-- 1.DDL
+
+CREATE TABLE deposit_types(
+  deposit_type_id INT PRIMARY KEY,
+  name VARCHAR(20)
+);
+
+CREATE TABLE deposits(
+  deposit_id INT AUTO_INCREMENT PRIMARY KEY,
+  amount DECIMAL(10,2),
+  start_date DATE,
+  end_date DATE,
+  deposit_type_id INT NOT NULL,
+  customer_id INT NOT NULL,
+  CONSTRAINT fk_deposits_deposit_type FOREIGN KEY (deposit_type_id) REFERENCES deposit_types(deposit_type_id),
+  CONSTRAINT fk_deposits_customers FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+CREATE TABLE employees_deposits(
+  employee_id INT,
+  deposit_id INT,
+  CONSTRAINT pk_employees_deposits PRIMARY KEY (employee_id, deposit_id),
+  CONSTRAINT fk_employees_deposits_employees FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+  CONSTRAINT fk_employees_deposits_deposits FOREIGN KEY (deposit_id) REFERENCES deposits(deposit_id)
+);
+
+CREATE TABLE credit_history(
+  credit_history_id INT PRIMARY KEY,
+  mark CHAR(1),
+  start_date DATE,
+  end_date DATE,
+  customer_id INT NOT NULL,
+  CONSTRAINT fk_credit_history_customers FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+CREATE TABLE payments(
+  payement_id INT PRIMARY KEY,
+  date DATE,
+  amount DECIMAL(10,2),
+  loan_id INT NOT NULL,
+  CONSTRAINT fk_payments_loans FOREIGN KEY (loan_id) REFERENCES loans(loan_id)
+);
+
+CREATE TABLE users(
+  user_id INT PRIMARY KEY,
+  user_name VARCHAR(20),
+  password VARCHAR(20),
+  customer_id INT UNIQUE,
+  CONSTRAINT fk_users_customers FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+ALTER TABLE employees
+ADD manager_id INT,
+ADD CONSTRAINT fk_employees_employees FOREIGN KEY (manager_id) REFERENCES employees(employee_id)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- 2.1 DML
+INSERT INTO deposit_types (deposit_type_id, name) VALUES
+  (1,	"Time Deposit"),
+  (2,	"Call Deposit"),
+  (3,	"Free Deposit");
+
+INSERT INTO deposits (amount, start_date, end_date, deposit_type_id, customer_id)
+    SELECT
+      CASE
+        WHEN c.date_of_birth > DATE ("1980-01-01") THEN
+          CASE
+            WHEN c.gender = "M" THEN 1100
+            ELSE 1200
+          END
+        ELSE
+          CASE
+            WHEN c.gender = "M" THEN 1600
+            ELSE 1700
+          END
+      END AS amount,
+      NOW() AS start_date,
+      NULL AS end_date,
+      CASE
+        WHEN c.customer_id > 15 THEN 3
+        WHEN c.customer_id % 2 = 0 THEN 2
+        WHEN c.customer_id % 2 != 0 THEN 1
+      END AS deposit_type_id,
+      c.customer_id
+    FROM customers AS c
+    WHERE c.customer_id < 20;
+
+INSERT INTO employees_deposits (employee_id, deposit_id) VALUES
+  (15,	4),
+  (20,	15),
+  (8,	7),
+  (4,	8),
+  (3,	13),
+  (3,	8),
+  (4,	10),
+  (10,	1),
+  (13,	4),
+  (14,	9);
+
+////////////////////////////////
+-- 2.2 DML
+
+UPDATE employees AS e
+SET e.manager_id := CASE
+    WHEN e.employee_id BETWEEN 2 AND 10 THEN 1
+    WHEN e.employee_id BETWEEN 12 AND 20 THEN 11
+    WHEN e.employee_id BETWEEN 22 AND 30 THEN 21
+    WHEN e.employee_id IN (11, 21) THEN 1
+    END
+	
+////////////////////////////////////////////////////
+-- 2.3 DML
+
+DELETE FROM employees_deposits
+WHERE deposit_id = 9 OR employee_id = 3
+
+/////////////////////////////////////////////////////////////////////////////////////////
+3.1 Querying
+
+SELECT
+  e.employee_id,
+  e.hire_date,
+  e.salary,
+  e.branch_id
+FROM employees AS e
+WHERE e.salary > 2000 AND e.hire_date > DATE("2009-06-15")
+
+///////////////////////////////////////////////////////////////////////////////////////
+3.2 Querying 
+
+SELECT
+  c.first_name,
+  c.date_of_birth,
+  FLOOR(DATEDIFF("2016-10-01", c.date_of_birth) / 360) AS age
+FROM customers AS c
+WHERE DATEDIFF("2016-10-01", c.date_of_birth) / 360 BETWEEN 40 AND 50
+
+////////////////////////////////////////////////////////////////////////////////////////
+3.3 Querying
+
+SELECT
+  c.customer_id,
+  c.first_name,
+  c.last_name,
+  c.gender,
+  ci.city_name
+FROM customers AS c
+LEFT JOIN cities AS ci
+  ON c.city_id = ci.city_id
+WHERE ((c.last_name LIKE "Bu%") OR (c.first_name LIKE "%a"))
+      AND CHAR_LENGTH(ci.city_name) > 7
+	  
+/////////////////////////////////////////////////////////////////////////
+3.4 Querying 
+
+SELECT
+  e.employee_id,
+  e.first_name,
+  a.account_number
+FROM employees AS e
+LEFT JOIN employees_accounts AS ea
+  ON e.employee_id = ea.employee_id
+LEFT JOIN accounts AS a
+  ON ea.account_id = a.account_id
+WHERE YEAR(a.start_date) > "2012"
+ORDER BY e.first_name DESC
+LIMIT 5
+
+/////////////////////////////////////////////////////////////////////////
+3.5 Querying 
+
+SELECT
+  r.city_name,
+  r.name,
+  r.employees_in_cities AS employees_count
+FROM
+(SELECT
+  c.city_name,
+  b.name,
+  COUNT(e.employee_id) AS employees_in_cities
+FROM employees AS e
+LEFT JOIN branches AS b
+  ON e.branch_id = b.branch_id
+LEFT JOIN cities AS c
+  ON b.city_id = c.city_id
+WHERE c.city_id NOT IN (4, 5)
+GROUP BY c.city_name, b.name) AS r
+WHERE r.employees_in_cities >= 3
+
+///////////////////////////////////////////////////////////////////////////////////
+3.6 Querying 
+
+SELECT 
+
+(SELECT
+  SUM(l.amount) 
+FROM employees AS e
+RIGHT JOIN employees_loans AS el
+  ON e.employee_id = el.employee_id
+LEFT JOIN loans AS l
+  ON el.loan_id = l.loan_id) AS total_loan_amount,
+
+(SELECT
+  MAX(l.interest) 
+FROM employees AS e
+RIGHT JOIN employees_loans AS el
+  ON e.employee_id = el.employee_id
+LEFT JOIN loans AS l
+  ON el.loan_id = l.loan_id) AS max_interest,
+
+(SELECT
+  MIN(e.salary) 
+FROM employees AS e
+RIGHT JOIN employees_loans AS el
+  ON e.employee_id = el.employee_id
+LEFT JOIN loans AS l
+  ON el.loan_id = l.loan_id) AS min_employee_salary
+  
+ /////////////////////////////////////////////////////////////////////////////////////
+ 3.7 Querying
+ 
+(SELECT
+  e.first_name,
+  c.city_name AS city_name
+FROM employees AS e
+INNER JOIN branches AS b
+  ON e.branch_id = b.branch_id
+INNER JOIN cities AS c
+  ON b.city_id = c.city_id
+LIMIT 3)
+
+UNION ALL
+
+(SELECT
+  c.first_name,
+  ci.city_name AS city_name
+FROM customers AS c
+INNER JOIN cities AS ci
+  ON c.city_id = ci.city_id
+LIMIT 3)
+
+////////////////////////////////////////////////////////////////////////////////////
+3.8 Querying
+
+SELECT
+  c.customer_id,
+  c.height
+FROM customers AS c
+LEFT JOIN accounts AS a
+  ON c.customer_id = a.customer_id
+WHERE a.account_id IS NULL AND c.height BETWEEN 1.74 AND 2.04
+
+///////////////////////////////////////////////////////////////////////////////
+3.9 Querying
+
+SELECT
+  c.customer_id,
+  l.amount
+FROM loans AS l
+LEFT JOIN customers AS c
+  ON l.customer_id = c.customer_id
+WHERE l.amount > (SELECT AVG(l.amount) AS avg_loan
+                  FROM loans AS l
+                  LEFT JOIN customers AS c
+                    ON l.customer_id = c.customer_id
+                  WHERE c.gender = "M")
+ORDER BY c.last_name ASC
+LIMIT 5
+
+///////////////////////////////////////////////////////////////////////////////////
+3.10 Querying
+
+
+SELECT
+  c.customer_id,
+  c.first_name,
+  a.start_date
+FROM customers AS c
+RIGHT JOIN accounts AS a
+    ON c.customer_id = a.customer_id
+WHERE a.start_date = (SELECT MIN(a.start_date)
+                      FROM accounts AS a)
+
+////////////////////////////////////////////////////////////////////////////////////
+4.1 Programmability
+
+CREATE FUNCTION udf_concat_string(firts_word VARCHAR(255), second_word VARCHAR(255))
+  RETURNS VARCHAR(255)
+  BEGIN
+    RETURN CONCAT(REVERSE(firts_word), REVERSE(second_word));
+  END
+  
+////////////////////////////////////////////////////////////////////////////////////
+4.2 Programmability
+
+CREATE PROCEDURE usp_customers_with_unexpired_loans(input_id INT)
+  BEGIN
+
+    SELECT
+      c.customer_id,
+      c.first_name,
+      l.loan_id
+    FROM loans AS l
+    LEFT JOIN customers AS c
+      ON l.customer_id = c.customer_id
+    WHERE c.customer_id = input_id AND l.expiration_date IS NULL;
+
+  END
+  
+/////////////////////////////////////////////////////////////////////////////////////
+4.3 Programmability
+
+CREATE PROCEDURE usp_take_loan
+  (input_customer_id INT, input_loan_amount DECIMAL(18,2), input_interest DECIMAL(4,2),input_start_date DATE)
+  BEGIN
+    
+      START TRANSACTION;
+
+      INSERT INTO loans (start_date, amount, interest, expiration_date, customer_id) VALUES
+        (input_start_date, input_loan_amount, input_interest, NULL, input_customer_id);
+
+      IF (input_loan_amount NOT BETWEEN 0.01 AND 100000 ) THEN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid Loan Amount.';
+      END IF;
+
+  END
+  
+////////////////////////////////////////////////////////////////////////////////////////////////
+4.4 Programmability
+
+CREATE TRIGGER tr_insert_employee
+  AFTER INSERT
+  ON employees
+  FOR EACH ROW
+  BEGIN
+
+    INSERT INTO employees_loans (employee_id, loan_id)  VALUES
+      (new.employee_id, (SELECT el.loan_id FROM employees_loans AS el WHERE el.employee_id = new.employee_id - 1));
+
+  END
+  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+5. Bonus
+
+CREATE TRIGGER tr_delete_accounts
+  AFTER DELETE
+  ON accounts
+  FOR EACH ROW
+  BEGIN
+
+    INSERT INTO account_logs (account_id, account_number, start_date, customer_id) VALUES
+      (old.account_id, old.account_number, old.start_date, old.customer_id);
+
+  END;
+
+
+ALTER TABLE employees_accounts
+DROP FOREIGN KEY fk_employees_accounts_Account;
